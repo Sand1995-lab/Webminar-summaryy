@@ -1,250 +1,1320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Energy Market Intelligence Report - September 2025</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #000;
+            overflow-x: hidden;
+            position: relative;
+            scroll-behavior: smooth;
+            perspective: 2000px;
+        }
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        .page {
+            min-height: 100vh;
+            padding: 40px 20px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            scroll-snap-align: start;
+            transform-style: preserve-3d;
+        }
+        .content-wrapper {
+            max-width: 1400px;
+            width: 100%;
+            background: rgba(0, 30, 20, 0.95);
+            border-radius: 30px;
+            padding: 50px;
+            box-shadow:
+                0 25px 80px rgba(0, 255, 127, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 255, 127, 0.2);
+            animation: slideIn 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transform-style: preserve-3d;
+            transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+        }
+        .content-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(circle at 20% 80%, rgba(0, 255, 127, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(127, 255, 212, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        .content-wrapper:hover {
+            transform: rotateX(-2deg) rotateY(3deg) translateZ(20px);
+            box-shadow:
+                0 40px 120px rgba(0, 255, 127, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(100px) rotateX(-15deg);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) rotateX(0deg);
+            }
+        }
+        h1 {
+            font-size: clamp(2.5em, 5vw, 4em);
+            background: linear-gradient(135deg,
+                #00ff7f 0%,
+                #7fffd4 25%,
+                #00ff7f 50%,
+                #32cd32 75%,
+                #00ff7f 100%);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 0 0 30px rgba(0, 255, 127, 0.5);
+            animation: energyFlow 4s ease-in-out infinite;
+            transform: translateZ(50px);
+            position: relative;
+        }
+        h1::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transform: translateX(-100%);
+            animation: shine 3s infinite;
+        }
+        @keyframes energyFlow {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        @keyframes shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        h2 {
+            font-size: 2.5em;
+            color: #7fffd4;
+            margin: 30px 0 20px;
+            border-left: 5px solid #00ff7f;
+            padding-left: 20px;
+            text-shadow: 0 0 20px rgba(127, 255, 212, 0.5);
+            transform: translateZ(30px);
+            position: relative;
+        }
+        h2::before {
+            content: '';
+            position: absolute;
+            left: -5px;
+            top: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(90deg, #00ff7f, #32cd32);
+            box-shadow: 0 0 15px #00ff7f;
+        }
+        h3 {
+            font-size: 1.8em;
+            color: #98fb98;
+            margin: 20px 0 15px;
+            background: linear-gradient(90deg, rgba(0,255,127,0.1) 0%, transparent 100%);
+            padding: 15px 25px;
+            border-radius: 15px;
+            border: 1px solid rgba(0,255,127,0.3);
+            transform: translateZ(20px);
+            transition: all 0.3s ease;
+        }
+        h3:hover {
+            background: linear-gradient(90deg, rgba(0,255,127,0.2) 0%, rgba(127,255,212,0.1) 100%);
+            transform: translateZ(30px) scale(1.02);
+            box-shadow: 0 10px 30px rgba(0,255,127,0.3);
+        }
+        .highlight-box {
+            background: linear-gradient(135deg,
+                rgba(0,255,127,0.15) 0%,
+                rgba(127,255,212,0.1) 50%,
+                rgba(50,205,50,0.15) 100%);
+            border: 2px solid rgba(0,255,127,0.4);
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 20px;
+            box-shadow:
+                0 15px 40px rgba(0,255,127,0.2),
+                inset 0 1px 0 rgba(255,255,255,0.1);
+            transform: translateZ(30px);
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+        }
+        .highlight-box::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(0,255,127,0.1), transparent);
+            animation: rotate 8s linear infinite;
+            pointer-events: none;
+        }
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .highlight-box:hover {
+            transform: translateZ(50px) scale(1.03);
+            box-shadow:
+                0 25px 60px rgba(0,255,127,0.4),
+                inset 0 2px 0 rgba(255,255,255,0.2);
+            border-color: rgba(0,255,127,0.8);
+        }
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+            perspective: 1000px;
+        }
+        .stat-card {
+            background: linear-gradient(145deg,
+                rgba(0,30,20,0.9) 0%,
+                rgba(0,50,30,0.9) 100%);
+            padding: 35px;
+            border-radius: 25px;
+            box-shadow:
+                0 20px 60px rgba(0,0,0,0.5),
+                0 0 30px rgba(0,255,127,0.2),
+                inset 0 1px 0 rgba(255,255,255,0.1);
+            text-align: center;
+            transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            border: 2px solid rgba(0,255,127,0.3);
+            transform-style: preserve-3d;
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0,255,127,0.1), transparent);
+            transition: left 0.5s ease;
+        }
+        .stat-card:hover::before {
+            left: 100%;
+        }
+        .stat-card:hover {
+            transform: translateY(-15px) rotateX(10deg) rotateY(5deg) scale(1.05);
+            box-shadow:
+                0 30px 80px rgba(0,0,0,0.6),
+                0 0 50px rgba(0,255,127,0.5),
+                inset 0 2px 0 rgba(255,255,255,0.2);
+            border-color: rgba(0,255,127,0.8);
+        }
+        .stat-value {
+            font-size: 3em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #00ff7f 0%, #7fffd4 50%, #32cd32 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(0,255,127,0.8);
+            margin-bottom: 10px;
+            transform: translateZ(20px);
+        }
+        .stat-label {
+            color: #98fb98;
+            margin-top: 15px;
+            font-size: 1.2em;
+            font-weight: 500;
+            text-shadow: 0 0 10px rgba(152,251,152,0.5);
+            transform: translateZ(10px);
+        }
+        .chart-container {
+            position: relative;
+            height: 450px;
+            margin: 40px 0;
+            background: linear-gradient(145deg,
+                rgba(0,20,15,0.9) 0%,
+                rgba(0,40,25,0.9) 100%);
+            padding: 25px;
+            border-radius: 25px;
+            box-shadow:
+                0 20px 60px rgba(0,0,0,0.4),
+                inset 0 1px 0 rgba(0,255,127,0.2);
+            border: 2px solid rgba(0,255,127,0.3);
+            transform: translateZ(20px);
+            transition: all 0.4s ease;
+        }
+        .chart-container:hover {
+            transform: translateZ(40px) scale(1.02);
+            box-shadow:
+                0 30px 80px rgba(0,0,0,0.5),
+                inset 0 2px 0 rgba(0,255,127,0.4);
+        }
+        .key-points {
+            background: linear-gradient(145deg,
+                rgba(0,25,15,0.95) 0%,
+                rgba(0,40,25,0.9) 100%);
+            padding: 35px;
+            border-radius: 25px;
+            margin: 30px 0;
+            box-shadow:
+                0 20px 50px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(0,255,127,0.1);
+            border: 2px solid rgba(0,255,127,0.2);
+            transform: translateZ(15px);
+        }
+        .key-points li {
+            margin: 20px 0;
+            padding-left: 40px;
+            position: relative;
+            color: #e0ffe0;
+            font-size: 1.1em;
+            line-height: 1.8;
+            text-shadow: 0 0 5px rgba(224,255,224,0.3);
+        }
+        .key-points li:before {
+            content: "⚡";
+            position: absolute;
+            left: 0;
+            color: #00ff7f;
+            font-size: 1.5em;
+            text-shadow: 0 0 15px #00ff7f;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                text-shadow: 0 0 15px #00ff7f;
+            }
+            50% {
+                transform: scale(1.2);
+                text-shadow: 0 0 25px #00ff7f, 0 0 35px #00ff7f;
+            }
+        }
+        .energy-icon {
+            display: inline-block;
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #00ff7f 0%, #32cd32 100%);
+            border-radius: 50%;
+            margin: 0 auto 25px;
+            position: relative;
+            box-shadow:
+                0 0 30px rgba(0,255,127,0.8),
+                inset 0 5px 15px rgba(255,255,255,0.2);
+            animation: energyPulse 3s infinite;
+        }
+        @keyframes energyPulse {
+            0% {
+                box-shadow:
+                    0 0 30px rgba(0,255,127,0.8),
+                    inset 0 5px 15px rgba(255,255,255,0.2);
+            }
+            50% {
+                box-shadow:
+                    0 0 50px rgba(0,255,127,1),
+                    0 0 80px rgba(0,255,127,0.6),
+                    inset 0 5px 15px rgba(255,255,255,0.3);
+            }
+            100% {
+                box-shadow:
+                    0 0 30px rgba(0,255,127,0.8),
+                    inset 0 5px 15px rgba(255,255,255,0.2);
+            }
+        }
+        .nav-dots {
+            position: fixed;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1000;
+        }
+        .nav-dot {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: rgba(0,255,127,0.3);
+            margin: 15px 0;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            border: 2px solid rgba(0,255,127,0.5);
+            box-shadow: 0 0 15px rgba(0,255,127,0.3);
+        }
+        .nav-dot:hover,
+        .nav-dot.active {
+            background: #00ff7f;
+            transform: scale(1.4);
+            box-shadow:
+                0 0 25px rgba(0,255,127,0.8),
+                0 0 40px rgba(0,255,127,0.4);
+            border-color: #00ff7f;
+        }
+        .scroll-indicator {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: bounce 2s infinite;
+            color: #00ff7f;
+            font-size: 2.5em;
+            z-index: 100;
+            text-shadow: 0 0 20px #00ff7f;
+        }
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+            40% { transform: translateX(-50%) translateY(-20px); }
+            60% { transform: translateX(-50%) translateY(-10px); }
+        }
+        p {
+            color: #e0ffe0;
+            line-height: 1.8;
+            font-size: 1.1em;
+            text-shadow: 0 0 3px rgba(224,255,224,0.2);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #00ff7f 0%, #7fffd4 50%, #32cd32 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 4s linear infinite;
+        }
+        @keyframes gradientShift {
+            to { background-position: 200% center; }
+        }
+        .table-responsive {
+            overflow-x: auto;
+            margin: 30px 0;
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: linear-gradient(145deg,
+                rgba(0,25,15,0.95) 0%,
+                rgba(0,35,25,0.95) 100%);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 2px solid rgba(0,255,127,0.3);
+        }
+        th {
+            background: linear-gradient(135deg, #00ff7f 0%, #32cd32 100%);
+            color: #000;
+            padding: 20px;
+            text-align: left;
+            font-weight: 700;
+            font-size: 1.1em;
+            text-shadow: none;
+        }
+        td {
+            padding: 18px 20px;
+            border-bottom: 1px solid rgba(0,255,127,0.2);
+            color: #e0ffe0;
+            transition: all 0.3s ease;
+        }
+        tr:hover {
+            background: linear-gradient(90deg,
+                rgba(0,255,127,0.1) 0%,
+                rgba(127,255,212,0.05) 100%);
+            transform: scale(1.01);
+        }
+        @media (max-width: 768px) {
+            .content-wrapper {
+                padding: 30px 20px;
+                margin: 20px 10px;
+            }
+            .stat-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            h1 { font-size: 2.5em; }
+            h2 { font-size: 2em; }
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
 
+    <!-- Navigation dots (20 pages) -->
+    <div class="nav-dots">
+        <div class="nav-dot active" onclick="scrollToPage(0)"></div>
+        <div class="nav-dot" onclick="scrollToPage(1)"></div>
+        <div class="nav-dot" onclick="scrollToPage(2)"></div>
+        <div class="nav-dot" onclick="scrollToPage(3)"></div>
+        <div class="nav-dot" onclick="scrollToPage(4)"></div>
+        <div class="nav-dot" onclick="scrollToPage(5)"></div>
+        <div class="nav-dot" onclick="scrollToPage(6)"></div>
+        <div class="nav-dot" onclick="scrollToPage(7)"></div>
+        <div class="nav-dot" onclick="scrollToPage(8)"></div>
+        <div class="nav-dot" onclick="scrollToPage(9)"></div>
+        <div class="nav-dot" onclick="scrollToPage(10)"></div>
+        <div class="nav-dot" onclick="scrollToPage(11)"></div>
+        <div class="nav-dot" onclick="scrollToPage(12)"></div>
+        <div class="nav-dot" onclick="scrollToPage(13)"></div>
+        <div class="nav-dot" onclick="scrollToPage(14)"></div>
+        <div class="nav-dot" onclick="scrollToPage(15)"></div>
+        <div class="nav-dot" onclick="scrollToPage(16)"></div>
+        <div class="nav-dot" onclick="scrollToPage(17)"></div>
+        <div class="nav-dot" onclick="scrollToPage(18)"></div>
+        <div class="nav-dot" onclick="scrollToPage(19)"></div>
+    </div>
+    <div class="scroll-indicator">⬇</div>
 
-'''<!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Energy Market Intelligence Report - September 2025</title> <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script> <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script> <style> * { margin: 0; padding: 0; box-sizing: border-box; } body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #000; overflow-x: hidden; position: relative; scroll-behavior: smooth; perspective: 2000px; } #canvas-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; } .page { min-height: 100vh; padding: 40px 20px; position: relative; display: flex; align-items: center; justify-content: center; scroll-snap-align: start; transform-style: preserve-3d; } .content-wrapper { max-width: 1400px; width: 100%; background: rgba(0, 30, 20, 0.95); border-radius: 30px; padding: 50px; box-shadow: 0 25px 80px rgba(0, 255, 127, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); border: 1px solid rgba(0, 255, 127, 0.2); animation: slideIn 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); transform-style: preserve-3d; transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94); position: relative; overflow: hidden; } .content-wrapper::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(circle at 20% 80%, rgba(0, 255, 127, 0.05) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(127, 255, 212, 0.05) 0%, transparent 50%); pointer-events: none; } .content-wrapper:hover { transform: rotateX(-2deg) rotateY(3deg) translateZ(20px); box-shadow: 0 40px 120px rgba(0, 255, 127, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2); } @keyframes slideIn { from { opacity: 0; transform: translateY(100px) rotateX(-15deg); } to { opacity: 1; transform: translateY(0) rotateX(0deg); } } h1 { font-size: clamp(2.5em, 5vw, 4em); background: linear-gradient(135deg, #00ff7f 0%, #7fffd4 25%, #00ff7f 50%, #32cd32 75%, #00ff7f 100%); background-size: 300% 300%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-align: center; margin-bottom: 30px; text-shadow: 0 0 30px rgba(0, 255, 127, 0.5); animation: energyFlow 4s ease-in-out infinite; transform: translateZ(50px); position: relative; } h1::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent); transform: translateX(-100%); animation: shine 3s infinite; } @keyframes energyFlow { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } } @keyframes shine { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } } h2 { font-size: 2.5em; color: #7fffd4; margin: 30px 0 20px; border-left: 5px solid #00ff7f; padding-left: 20px; text-shadow: 0 0 20px rgba(127, 255, 212, 0.5); transform: translateZ(30px); position: relative; } h2::before { content: ''; position: absolute; left: -5px; top: 0; width: 5px; height: 100%; background: linear-gradient(90deg, #00ff7f, #32cd32); box-shadow: 0 0 15px #00ff7f; } h3 { font-size: 1.8em; color: #98fb98; margin: 20px 0 15px; background: linear-gradient(90deg, rgba(0,255,127,0.1) 0%, transparent 100%); padding: 15px 25px; border-radius: 15px; border: 1px solid rgba(0,255,127,0.3); transform: translateZ(20px); transition: all 0.3s ease; } h3:hover { background: linear-gradient(90deg, rgba(0,255,127,0.2) 0%, rgba(127,255,212,0.1) 100%); transform: translateZ(30px) scale(1.02); box-shadow: 0 10px 30px rgba(0,255,127,0.3); } .highlight-box { background: linear-gradient(135deg, rgba(0,255,127,0.15) 0%, rgba(127,255,212,0.1) 50%, rgba(50,205,50,0.15) 100%); border: 2px solid rgba(0,255,127,0.4); padding: 25px; margin: 25px 0; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,255,127,0.2), inset 0 1px 0 rgba(255,255,255,0.1); transform: translateZ(30px); transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); position: relative; overflow: hidden; } .highlight-box::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent, rgba(0,255,127,0.1), transparent); animation: rotate 8s linear infinite; pointer-events: none; } @keyframes rotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } } .highlight-box:hover { transform: translateZ(50px) scale(1.03); box-shadow: 0 25px 60px rgba(0,255,127,0.4), inset 0 2px 0 rgba(255,255,255,0.2); border-color: rgba(0,255,127,0.8); } .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; margin: 40px 0; perspective: 1000px; } .stat-card { background: linear-gradient(145deg, rgba(0,30,20,0.9) 0%, rgba(0,50,30,0.9) 100%); padding: 35px; border-radius: 25px; box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 30px rgba(0,255,127,0.2), inset 0 1px 0 rgba(255,255,255,0.1); text-align: center; transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); border: 2px solid rgba(0,255,127,0.3); transform-style: preserve-3d; position: relative; overflow: hidden; } .stat-card::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(0,255,127,0.1), transparent); transition: left 0.5s ease; } .stat-card:hover::before { left: 100%; } .stat-card:hover { transform: translateY(-15px) rotateX(10deg) rotateY(5deg) scale(1.05); box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 50px rgba(0,255,127,0.5), inset 0 2px 0 rgba(255,255,255,0.2); border-color: rgba(0,255,127,0.8); } .stat-value { font-size: 3em; font-weight: bold; background: linear-gradient(135deg, #00ff7f 0%, #7fffd4 50%, #32cd32 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-shadow: 0 0 30px rgba(0,255,127,0.8); margin-bottom: 10px; transform: translateZ(20px); } .stat-label { color: #98fb98; margin-top: 15px; font-size: 1.2em; font-weight: 500; text-shadow: 0 0 10px rgba(152,251,152,0.5); transform: translateZ(10px); } .chart-container { position: relative; height: 450px; margin: 40px 0; background: linear-gradient(145deg, rgba(0,20,15,0.9) 0%, rgba(0,40,25,0.9) 100%); padding: 25px; border-radius: 25px; box-shadow: 0 20px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(0,255,127,0.2); border: 2px solid rgba(0,255,127,0.3); transform: translateZ(20px); transition: all 0.4s ease; } .chart-container:hover { transform: translateZ(40px) scale(1.02); box-shadow: 0 30px 80px rgba(0,0,0,0.5), inset 0 2px 0 rgba(0,255,127,0.4); } .key-points { background: linear-gradient(145deg, rgba(0,25,15,0.95) 0%, rgba(0,40,25,0.9) 100%); padding: 35px; border-radius: 25px; margin: 30px 0; box-shadow: 0 20px 50px rgba(0,0,0,0.3), inset 0 1px 0 rgba(0,255,127,0.1); border: 2px solid rgba(0,255,127,0.2); transform: translateZ(15px); } .key-points li { margin: 20px 0; padding-left: 40px; position: relative; color: #e0ffe0; font-size: 1.1em; line-height: 1.8; text-shadow: 0 0 5px rgba(224,255,224,0.3); } .key-points li:before { content: "⚡"; position: absolute; left: 0; color: #00ff7f; font-size: 1.5em; text-shadow: 0 0 15px #00ff7f; animation: pulse 2s infinite; } @keyframes pulse { 0%, 100% { transform: scale(1); text-shadow: 0 0 15px #00ff7f; } 50% { transform: scale(1.2); text-shadow: 0 0 25px #00ff7f, 0 0 35px #00ff7f; } } .energy-icon { display: inline-block; width: 80px; height: 80px; background: linear-gradient(135deg, #00ff7f 0%, #32cd32 100%); border-radius: 50%; margin: 0 auto 25px; position: relative; box-shadow: 0 0 30px rgba(0,255,127,0.8), inset 0 5px 15px rgba(255,255,255,0.2); animation: energyPulse 3s infinite; } @keyframes energyPulse { 0% { box-shadow: 0 0 30px rgba(0,255,127,0.8), inset 0 5px 15px rgba(255,255,255,0.2); } 50% { box-shadow: 0 0 50px rgba(0,255,127,1), 0 0 80px rgba(0,255,127,0.6), inset 0 5px 15px rgba(255,255,255,0.3); } 100% { box-shadow: 0 0 30px rgba(0,255,127,0.8), inset 0 5px 15px rgba(255,255,255,0.2); } } .nav-dots { position: fixed; right: 30px; top: 50%; transform: translateY(-50%); z-index: 1000; } .nav-dot { width: 18px; height: 18px; border-radius: 50%; background: rgba(0,255,127,0.3); margin: 15px 0; cursor: pointer; transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); border: 2px solid rgba(0,255,127,0.5); box-shadow: 0 0 15px rgba(0,255,127,0.3); } .nav-dot:hover, .nav-dot.active { background: #00ff7f; transform: scale(1.4); box-shadow: 0 0 25px rgba(0,255,127,0.8), 0 0 40px rgba(0,255,127,0.4); border-color: #00ff7f; } .table-responsive { overflow-x: auto; margin: 30px 0; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.3); } table { width: 100%; border-collapse: collapse; background: linear-gradient(145deg, rgba(0,25,15,0.95) 0%, rgba(0,35,25,0.95) 100%); border-radius: 20px; overflow: hidden; border: 2px solid rgba(0,255,127,0.3); } th { background: linear-gradient(135deg, #00ff7f 0%, #32cd32 100%); color: #000; padding: 20px; text-align: left; font-weight: 700; font-size: 1.1em; text-shadow: none; } td { padding: 18px 20px; border-bottom: 1px solid rgba(0,255,127,0.2); color: #e0ffe0; transition: all 0.3s ease; } tr:hover { background: linear-gradient(90deg, rgba(0,255,127,0.1) 0%, rgba(127,255,212,0.05) 100%); transform: scale(1.01); } .scroll-indicator { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); animation: bounce 2s infinite; color: #00ff7f; font-size: 2.5em; z-index: 100; text-shadow: 0 0 20px #00ff7f; } @keyframes bounce { 0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); } 40% { transform: translateX(-50%) translateY(-20px); } 60% { transform: translateX(-50%) translateY(-10px); } } p { color: #e0ffe0; line-height: 1.8; font-size: 1.1em; text-shadow: 0 0 3px rgba(224,255,224,0.2); } .gradient-text { background: linear-gradient(135deg, #00ff7f 0%, #7fffd4 50%, #32cd32 100%); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; } </style> </head> <body> <div id="canvas-container"></div> <div class="page" id="page-1"> <div class="content-wrapper"> <h1>Energy Market Intelligence</h1>
-        <p class="gradient-text" style="text-align: center; font-size: 1.2em; margin-bottom: 10px;">Report by SANDIP NAYEK</p> <p class="gradient-text" style="text-align: center; font-size: 1.5em; margin-bottom: 20px;">September 2025</p> <div class="highlight-box"> <p>This report provides an overview of the key developments in the energy market, including weather forecasts, trade negotiations, production trends, and the outlook for various energy sources. The information is based on the "Constellation Energy Market Intelligence Webinar" from September 25, 2025.</p> </div> <h2>Key Takeaways</h2> <ul class="key-points"> <li>The U.S. is leveraging trade negotiations to promote its energy dominance, with significant commitments for LNG exports.</li> <li>Natural gas production remains at record highs, supporting storage levels.</li> <li>The offshore wind industry faces uncertainty due to recent government actions.</li> <li>PJM capacity auction results show a significant increase in prices, reflecting growing demand and supply constraints.</li> </ul> </div> </div>'''
-
-
-<div class="page" id="page-2">
-    <div class="content-wrapper">
-        <h2>Weather Outlook</h2>
-        <div class="highlight-box">
-            <h3>October and November Forecasts</h3>
-            <p>For October 2025, the forecast indicates <strong>245 HDDs</strong>. There is no definitive signal from the Pacific, with ENSO conditions remaining neutral. The tropical season is expected to remain active throughout October. Preferred analogs suggest near-normal conditions from the Plains to the Southeast, while warmer-than-average temperatures are likely across the North and interior West. The tropics will remain a significant wild card.</p>
-            <p>The November 2025 forecast predicts <strong>510 HDDs</strong>. The main idea is that the eastern U.S. will experience mild conditions, while cold air is expected to develop in western Canada. The Eastern U.S. is likely to remain warmer than normal, though variations could allow for a burst of cold air to move eastward before the month ends.</p>
-        </div>
-        <div class="highlight-box">
-            <h3>NOAA Winter Outlook & ENSO Forecast</h3>
-            <p>The upcoming winter is not expected to have a strong ENSO signal for the second consecutive season, fluctuating between ENSO neutral and a weak La Niña at times. This weak signal suggests that variability will be a common theme throughout the winter, similar to last year.</p>
-            <p>The NOAA winter forecast aligns with a typical La Niña weather pattern: colder and stormier in the Northwest, with better chances for warmer-than-normal temperatures in the South and East. With no dominant ENSO signal, other indices like the NAO and AO could be more influential, potentially leading to multiple, strong cold shots across the South and East this winter.</p>
+    <!-- Page 1: Title Page -->
+    <div class="page" id="page1">
+        <div class="content-wrapper">
+            <div class="energy-icon"></div>
+            <h1 class="gradient-text">Energy Market Intelligence Report</h1>
+            <h2 style="text-align: center; border: none;">Trade Talks Promote U.S. Energy Dominance</h2>
+            <div class="highlight-box" style="text-align: center;">
+                <h3>September 13, 2025</h3>
+                <p style="font-size: 1.3em;">Updated Energy Market Intelligence</p>
+            </div>
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-value">107.4</div>
+                    <div class="stat-label">Bcf/day Production</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">3,272</div>
+                    <div class="stat-label">Bcf Storage</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">$3.92</div>
+                    <div class="stat-label">Cal'26 NYMEX</div>
+                </div>
+            </div>
         </div>
     </div>
-</div>
 
+    <!-- Page 2: Executive Summary -->
+    <div class="page" id="page2">
+        <div class="content-wrapper">
+            <h1>Executive Summary</h1>
+            <div class="key-points">
+                <h3>Key Market Developments</h3>
+                <ul style="list-style: none;">
+                    <li>Summer 2025 ranked as the ninth warmest on record; cooling degree days tapered by August, easing summer demand【922490133870369†L116-L124】.</li>
+                    <li>U.S. trade negotiations secured more than $1 trillion in energy export commitments, opening 5.5 Bcf/d of new LNG demand【922490133870369†L61-L83】.</li>
+                    <li>Natural gas production averaged 107.4 Bcf/d in August, up from 101.9 Bcf/d a year earlier【922490133870369†L116-L124】.</li>
+                    <li>Storage stood at 3,272 Bcf in early September, 5.5% above the five‑year average【922490133870369†L186-L200】.</li>
+                    <li>PJM’s latest capacity auction saw record clearing prices as demand growth outpaced supply amid project delays【922490133870369†L385-L433】.</li>
+                    <li>Offshore wind development faces regulatory headwinds with multiple projects paused or permits revoked【922490133870369†L318-L343】.</li>
+                </ul>
+            </div>
+            <div class="highlight-box">
+                <h3>Overall Market Temperature</h3>
+                <p>The market remains cautiously bullish. Strong production and export fundamentals are balanced by full storage inventories and policy uncertainty. Weather risks and geopolitical developments keep volatility elevated.</p>
+            </div>
+        </div>
+    </div>
 
+    <!-- Page 3: Weather & Climate Outlook -->
+    <div class="page" id="page3">
+        <div class="content-wrapper">
+            <h1>Weather & Climate Outlook</h1>
+            <div class="key-points">
+                <h3>U.S. Fall and Winter Forecast</h3>
+                <ul style="list-style: none;">
+                    <li>ENSO conditions remain neutral heading into the 2025–26 winter, leading to high variability【922490133870369†L46-L59】.</li>
+                    <li>NOAA’s winter outlook expects a typical weak La Niña pattern—cooler and stormier in the Northwest, while the South and East stay warmer than normal【922490133870369†L46-L54】.</li>
+                    <li>Near‑normal conditions are possible from the Plains to the Southeast, but tropical systems remain a wild card through October【922490133870369†L28-L33】.</li>
+                    <li>November could see mild temperatures across the eastern U.S. with colder air building in western Canada and potential cold shots moving east【922490133870369†L35-L39】.</li>
+                </ul>
+            </div>
+            <div class="highlight-box">
+                <h3>Implications for Energy Demand</h3>
+                <p>Cooling demand moderates in autumn, but heating demand risk increases as the winter progresses. Neutral ENSO means greater reliance on shorter‑term indicators like the NAO/AO for forecasting. Volatile weather patterns necessitate flexible procurement strategies.</p>
+            </div>
+        </div>
+    </div>
 
-<div class="page" id="page-3">
-    <div class="content-wrapper">
-        <h2>Trade Negotiations & Energy Dominance</h2>
-        <div class="highlight-box">
-            <p>Recent trade negotiations have been a key component in promoting U.S. energy dominance, with several countries committing to significantly ramp up energy imports in exchange for tariff relief. This has accelerated agreements and incentivized the building of LNG production facilities in the U.S.</p>
-            <h3>Key Trade Agreements:</h3>
+    <!-- Page 4: Trade Negotiations & Energy Exports -->
+    <div class="page" id="page4">
+        <div class="content-wrapper">
+            <h1>Trade Negotiations & Energy Exports</h1>
+            <h2>Major LNG Export Commitments</h2>
             <div class="table-responsive">
                 <table>
                     <thead>
                         <tr>
                             <th>Country</th>
-                            <th>Commitment</th>
-                            <th>Estimated Value (Annual)</th>
-                            <th>Additional Details</th>
+                            <th>LNG Volume</th>
+                            <th>Annual Value</th>
+                            <th>Key Terms</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <td>South Korea</td>
-                            <td>0.4 Bcf/d LNG imports, tariff reductions on carbon capture and battery tech.</td>
-                            <td>~$511M</td>
-                            <td>HD Hyundai Heavy Industries to invest $250M in Philadelphia Navy Yard for Jones Act compliant LNG tanker, aiming to lower gas prices in New England and New York.</td>
+                            <td>0.4&nbsp;Bcf/d</td>
+                            <td>$0.5&nbsp;Bn</td>
+                            <td>Tariff relief; investment in Jones‑Act LNG tanker【922490133870369†L65-L70】</td>
                         </tr>
                         <tr>
                             <td>Japan</td>
-                            <td>0.54 Bcf/d additional LNG imports, licensing reform on nuclear.</td>
-                            <td>~$690M</td>
-                            <td></td>
+                            <td>0.54&nbsp;Bcf/d</td>
+                            <td>$0.7&nbsp;Bn</td>
+                            <td>Nuclear licensing reform【922490133870369†L71-L72】</td>
                         </tr>
                         <tr>
                             <td>India</td>
-                            <td>0.8 Bcf/d additional LNG imports plus 250k bbls/d of oil.</td>
-                            <td>~$1Bn (LNG)</td>
-                            <td></td>
+                            <td>0.8&nbsp;Bcf/d</td>
+                            <td>$1.0&nbsp;Bn</td>
+                            <td>LNG plus 250&nbsp;k bbls/d oil exports【922490133870369†L73-L74】</td>
                         </tr>
                         <tr>
                             <td>Mexico</td>
-                            <td>2.5 Bcf/d, Pipeline expansion, tariff-free electricity trade and cross-border grid integration.</td>
-                            <td>~$3.2Bn</td>
-                            <td></td>
+                            <td>2.5&nbsp;Bcf/d</td>
+                            <td>$3.2&nbsp;Bn</td>
+                            <td>Pipeline expansion; tariff‑free electricity trade【922490133870369†L75-L76】</td>
                         </tr>
                         <tr>
                             <td>European Union</td>
-                            <td>1.35 Bcf/d commits to buy LNG, oil and nuclear energy products over next 3 years.</td>
-                            <td>~$1.7Bn</td>
-                            <td></td>
+                            <td>1.35&nbsp;Bcf/d</td>
+                            <td>$1.7&nbsp;Bn</td>
+                            <td>Three‑year deal covering LNG, oil and nuclear【922490133870369†L77-L78】</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-            <p>Approximately <strong>5.5 Bcf/d of natural gas</strong> is projected to head overseas due to these agreements. Overall, commitments exceeding <strong>$1 Trillion</strong> for U.S. sourced energy are expected before the end of the decade, primarily through LNG purchases. A key question remains whether the U.S. energy industry can scale to meet this growing demand.</p>
-        </div>
-        <div class="highlight-box">
-            <h3>LNG Export Capacity & U.S. Energy Exports</h3>
-            <p>Currently, over <strong>17 Bcf/d of LNG export capacity</strong> is in service, with an additional <strong>2 Bcf/d in the commissioning phase</strong>. In the previous year, U.S. oil, gas, and coal exports totaled approximately <strong>$200 Billion</strong> according to UN Comtrade data.</p>
+            <div class="highlight-box">
+                <h3>Total Commitments</h3>
+                <p style="font-size: 1.3em;">In aggregate, these agreements will send <strong class="gradient-text">~5.5&nbsp;Bcf/d</strong> of U.S. natural gas overseas and secure more than <strong class="gradient-text">$1&nbsp;Trillion</strong> in energy purchases through the late 2020s【922490133870369†L61-L83】.</p>
+            </div>
         </div>
     </div>
-</div>
 
-
-
-<div class="page" id="page-4">
-    <div class="content-wrapper">
-        <h2>US Dry Gas Production</h2>
-        <div class="highlight-box">
-            <p>U.S. dry gas production is holding near record levels, contributing to healthy storage filling rates. New LNG trains and steady power burns are supporting demand.</p>
+    <!-- Page 5: Natural Gas Market Fundamentals -->
+    <div class="page" id="page5">
+        <div class="content-wrapper">
+            <h1>Natural Gas Market Fundamentals</h1>
+            <div class="chart-container">
+                <canvas id="gasProductionChart"></canvas>
+            </div>
+            <div class="key-points">
+                <h3>Production Highlights</h3>
+                <ul style="list-style: none;">
+                    <li>August 2025 U.S. dry gas production averaged 107.4&nbsp;Bcf/d, about 3.5&nbsp;Bcf/d higher than August 2024【922490133870369†L116-L124】.</li>
+                    <li>Year‑to‑date production through August averaged 105.2&nbsp;Bcf/d, reflecting efficiency gains and lower well costs【922490133870369†L116-L132】.</li>
+                    <li>EQT, a major Appalachian producer, reported 50% improvement in completion efficiency and a 10% reduction in well costs【922490133870369†L129-L131】.</li>
+                    <li>L48 power sector gas burns have trended around 43.4&nbsp;Bcf/d since June, down from 45.8&nbsp;Bcf/d last year【922490133870369†L194-L201】.</li>
+                </ul>
+            </div>
             <div class="stat-grid">
                 <div class="stat-card">
-                    <div class="stat-value">107.4 Bcf/day</div>
-                    <div class="stat-label">August 2025 Production Average</div>
+                    <div class="stat-value">55&nbsp;Bcf</div>
+                    <div class="stat-label">Latest Weekly Injection【922490133870369†L186-L200】</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value">105.2 Bcf/day</div>
-                    <div class="stat-label">Year-to-Date Production (thru 8/31)</div>
+                    <div class="stat-value">+5.5%</div>
+                    <div class="stat-label">vs. 5‑Year Average【922490133870369†L186-L200】</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value">106.63 Bcf/d</div>
-                    <div class="stat-label">STEO Forecast 2025</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">106.03 Bcf/d</div>
-                    <div class="stat-label">STEO Forecast 2026</div>
+                    <div class="stat-value">43.4&nbsp;Bcf/d</div>
+                    <div class="stat-label">L48 Power Burns【922490133870369†L194-L201】</div>
                 </div>
             </div>
-            <p>August 2025 production averaged <strong>107.4 Bcf/day</strong>, compared to 101.9 Bcf/day in August 2024. Year-to-date production through August 31st stands at <strong>105.2 Bcf per day</strong>, an increase of approximately 3.5 Bcf/d from 2024 levels. Production began September at 106.8 Bcf/d (industry analysts) and 107.2 Bcf/d (EIA).</p>
-            <p>Appalachian producer EQT reported a <strong>50% gain in completion efficiency</strong> in Q2, leading to a <strong>10% decrease in well costs</strong> (from ~$1,000/ft to ~$900/ft).</p>
         </div>
     </div>
-</div>
 
-
-
-<div class="page" id="page-5">
-    <div class="content-wrapper">
-        <h2>Natural Gas Storage</h2>
-        <div class="highlight-box">
-            <p>The EIA reported a solid injection of <strong>55 Bcf</strong> last week, marking the second largest injection of the summer. Current storage stands at <strong>3,272 Bcf</strong>, which is 73 Bcf (-2.2%) less than one year ago, but 173 Bcf (5.5%) above the 5-year average.</p>
-            <p>The EIA’s latest Short-Term Energy Outlook (STEO) revised the end of October storage prediction to <strong>3,912 Bcf</strong>. Assuming a 10-year normal winter, storage is projected to drop to <strong>1,852 Bcf</strong> by the end of March 2026.</p>
-            <p>Since June 1st, Lower 48 power burns averaged close to <strong>43.4 Bcf/d</strong>, compared to 45.8 Bcf/d last year. Higher spot gas prices have contributed to an increase in coal generation.</p>
-            <p>Storage is currently just under 3.3 Tcf and is on track to be effectively full by the end of October. As power burns begin their seasonal decline in the latter half of the month, there is a potential for producers to slow production if storage approaches 3.9 Tcf earlier than anticipated.</p>
-        </div>
-    </div>
-</div>
-
-
-
-<div class="page" id="page-6">
-    <div class="content-wrapper">
-        <h2>Russia-China Natural Gas Pipeline</h2>
-        <div class="highlight-box">
-            <p>Russia and China recently signed a legally binding memorandum for the <strong>Power of Siberia 2 pipeline</strong>, which will run from western Siberia to China. This pipeline is projected to flow <strong>50 Bcm/yr (~4.8 Bcf/d)</strong> of natural gas.</p>
-            <p>The existing Power of Siberia 1 pipeline, with a current capacity of 38 Bcm/yr, will see an increase of 6 Bcm. This expansion means that the total export capacity from Russia to China will rise to <strong>58 Bcm or 5.6 Bcf/day</strong>.</p>
-            <p>The revival of the Power of Siberia 2 pipeline places China in a strategic position, as Russia seeks to replace its gas sales to Europe, which aims to end Russian purchases by December 2027. China, however, is balancing its dependence on Russian supply with its need to replace U.S. LNG imports, which ceased in March due to reciprocal tariffs.</p>
-        </div>
-    </div>
-</div>
-
-
-
-<div class="page" id="page-7">
-    <div class="content-wrapper">
-        <h2>Offshore Wind Industry Challenges</h2>
-        <div class="highlight-box">
-            <p>The offshore wind industry in the U.S. is facing significant headwinds due to recent governmental actions, creating capacity and energy market uncertainty in northeast markets. The loss of new generation from canceled renewable projects may lead to more opportunities for fossil fuel infrastructure, including natural gas pipelines.</p>
-            <h3>Recent Developments:</h3>
-            <ul class="key-points">
-                <li><strong>April 16:</strong> Bureau of Energy Oceanic Management (BOEM) issued a work-stop order on Empire Wind in New York.</li>
-                <li><strong>July 29:</strong> Interior Secretary Doug Burgum rescinded designated offshore “wind energy areas” intended for speculative wind development.</li>
-                <li><strong>July 30:</strong> 12 offshore wind grants and project selections lost $679M of funding from the Department of Transportation.</li>
-                <li><strong>August 22:</strong> Interior Department ordered all activities halted for the Revolution Wind project and intends to revoke the Maryland Offshore Wind project’s construction and operations plan (COP).</li>
-                <li><strong>August 29:</strong> Interior Department intends to reconsider Southcoast Wind’s COP approval.</li>
-                <li><strong>September 3:</strong> BOEM to reconsider New England Wind 1 & 2’s COP.</li>
-            </ul>
-            <h3>Offshore Wind Project Status Overview:</h3>
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Project</th>
-                            <th>Status</th>
-                            <th>Capacity (MW)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Empire Wind (NY)</td>
-                            <td>Stop-work order lifted</td>
-                            <td>810</td>
-                        </tr>
-                        <tr>
-                            <td>Revolution Wind (RI, CT)</td>
-                            <td>Stop-work order issued</td>
-                            <td>704</td>
-                        </tr>
-                        <tr>
-                            <td>Maryland Offshore Wind</td>
-                            <td>Permit expected to be revoked</td>
-                            <td>2,200</td>
-                        </tr>
-                        <tr>
-                            <td>South Coast Wind (MA)</td>
-                            <td>Permits to be reconsidered</td>
-                            <td>2,400</td>
-                        </tr>
-                        <tr>
-                            <td>New England Wind 1 & 2 (MA)</td>
-                            <td>Permit expected to be revoked</td>
-                            <td>2,600</td>
-                        </tr>
-                        <tr>
-                            <td>Coastal Virginia Offshore Wind</td>
-                            <td>Under construction</td>
-                            <td>2,600</td>
-                        </tr>
-                        <tr>
-                            <td>Atlantic Shores (NJ)</td>
-                            <td>Fully permitted</td>
-                            <td>1,510</td>
-                        </tr>
-                        <tr>
-                            <td>Sunrise Wind (NY)</td>
-                            <td>Under construction</td>
-                            <td>924</td>
-                        </tr>
-                        <tr>
-                            <td>Vineyard Wind 1 (MA)</td>
-                            <td>Under construction</td>
-                            <td>403</td>
-                        </tr>
-                        <tr>
-                            <td>South Fork Wind (RI, NY)</td>
-                            <td>Operating</td>
-                            <td>132</td>
-                        </tr>
-                    </tbody>
-                </table>
+    <!-- Page 6: LNG & Export Capacity -->
+    <div class="page" id="page6">
+        <div class="content-wrapper">
+            <h1>LNG Export Capacity</h1>
+            <div class="key-points">
+                <h3>Infrastructure Expansion</h3>
+                <ul style="list-style: none;">
+                    <li>U.S. LNG export capacity in service stands just above 17&nbsp;Bcf/d with another 2&nbsp;Bcf/d in the commissioning phase【922490133870369†L86-L104】.</li>
+                    <li>Recent trade deals accelerate investment in new liquefaction trains and storage facilities.</li>
+                    <li>The UN Comtrade database shows U.S. exports of oil, gas and coal totalling about $200&nbsp;Bn in 2024【922490133870369†L88-L104】.</li>
+                    <li>Delivering 5.5&nbsp;Bcf/d of new LNG exports will require scaling production and infrastructure beyond current capacity.</li>
+                </ul>
             </div>
-            <p>Despite a flood of activity against the wind industry, there are still more potential targets that could further risk the growth of offshore wind.</p>
+            <div class="highlight-box">
+                <h3>Key Takeaway</h3>
+                <p>The U.S. is on the cusp of becoming the world’s largest LNG exporter. With long‑term commitments in place, project execution and timely permitting will determine whether domestic producers can meet booming global demand.</p>
+            </div>
         </div>
     </div>
-</div>
 
-
-
-<div class="page" id="page-8">
-    <div class="content-wrapper">
-        <h2>PJM Capacity Auction Results</h2>
-        <div class="highlight-box">
-            <p>PJM’s capacity auction results continue to set records, as rapidly increasing demand catches the market flatfooted after years of sufficient resources and low clearing prices. The supply side is impaired by supply chain issues, expiring tax incentives, and long interconnection queue delays.</p>
-            <h3>Auction Result Drivers:</h3>
-            <ul class="key-points">
-                <li><strong>5,446 MW increase</strong> in capacity requirement.</li>
-                <li>Reserve margin increased from <strong>17.8% to 19.1%</strong>.</li>
-                <li>Supply offered decreased by <strong>500 MW</strong> from the previous auction.</li>
-                <li>Energy efficiency resources were not eligible to participate.</li>
-                <li>Demand Response levels were similar.</li>
-            </ul>
-            <p>The price would have been <strong>$388.57/MW-day</strong> if a price cap had not been in place.</p>
+    <!-- Page 7: Natural Gas Consumption & Demand Forecast -->
+    <div class="page" id="page7">
+        <div class="content-wrapper">
+            <h1>Natural Gas Consumption &amp; Demand Forecast</h1>
+            <div class="chart-container">
+                <canvas id="consumptionChart"></canvas>
+            </div>
+            <div class="key-points">
+                <h3>EIA Consumption Outlook</h3>
+                <ul style="list-style: none;">
+                    <li>The U.S. Energy Information Administration (EIA) expects domestic natural gas consumption to rise 1% in 2025 to a record 91.4&nbsp;Bcf/d【429892515268527†L350-L358】.</li>
+                    <li>Consumption was elevated in early 2025 due to winter cold snaps; January demand hit a record 126.8&nbsp;Bcf/d【429892515268527†L360-L364】.</li>
+                    <li>The EIA projects consumption will decline slightly in 2026 as milder weather curbs residential and commercial demand【429892515268527†L390-L394】.</li>
+                    <li>Growth is expected outside the electric power sector; residential and commercial sectors offset weaker generation demand【429892515268527†L354-L379】.</li>
+                </ul>
+            </div>
         </div>
     </div>
-</div>
 
+    <!-- Page 8: Global Energy Market & Demand Growth -->
+    <div class="page" id="page8">
+        <div class="content-wrapper">
+            <h1>Global Energy Market</h1>
+            <div class="chart-container">
+                <canvas id="globalDemandChart"></canvas>
+            </div>
+            <div class="key-points">
+                <h3>Global Gas Demand Trends</h3>
+                <ul style="list-style: none;">
+                    <li>Following a surge in 2024, global natural gas demand growth slowed sharply in the first half of 2025; the International Energy Agency forecasts growth of roughly 1.3% for 2025 compared with 2.8% in 2024 (approximate values based on IEA quarterly reports).</li>
+                    <li>Asia‑Pacific remains the primary driver of demand growth as economies rebound and expand LNG import capacity.</li>
+                    <li>Europe’s demand recovery is muted due to energy efficiency measures and continued fuel switching away from gas.</li>
+                    <li>IEA projections suggest demand growth could reaccelerate in 2026 as new LNG supply comes on line and economic headwinds ease.</li>
+                </ul>
+            </div>
+            <div class="highlight-box">
+                <h3>International Competition</h3>
+                <p>U.S. producers face competition from Australia, Qatar and new mega‑projects in Africa. The global market remains tight, with Asia absorbing most incremental supply while Europe competes aggressively to replace Russian pipeline gas.</p>
+            </div>
+        </div>
+    </div>
 
+    <!-- Page 9: Geopolitical & Pipeline Developments -->
+    <div class="page" id="page9">
+        <div class="content-wrapper">
+            <h1>Geopolitical &amp; Pipeline Developments</h1>
+            <div class="key-points">
+                <h3>Russia–China Pipeline Agreement</h3>
+                <ul style="list-style: none;">
+                    <li>On 2&nbsp;September&nbsp;2025, Russia and China signed a legally binding memorandum to build the Power of Siberia&nbsp;2 pipeline through Mongolia, potentially delivering 50&nbsp;billion cubic metres (bcm) of gas annually (~4.8&nbsp;Bcf/d)【11909390558688†L195-L203】.</li>
+                    <li>The existing Power of Siberia pipeline’s capacity will rise from 38&nbsp;bcm to 44&nbsp;bcm, boosting current flows【11909390558688†L216-L219】.</li>
+                    <li>Pricing, construction timelines and contractors remain unresolved; the agreement signals deepening energy ties between Moscow and Beijing【11909390558688†L210-L233】.</li>
+                    <li>The project highlights China’s effort to diversify away from U.S. LNG while Russia seeks to replace lost European sales【11909390558688†L230-L267】.</li>
+                </ul>
+            </div>
+            <div class="highlight-box">
+                <h3>Implications for U.S. LNG</h3>
+                <p>The Power of Siberia 2 could displace some Asian LNG demand. However, long development timelines and ongoing negotiations mean U.S. LNG exports will remain critical for Asian buyers in the near term.</p>
+            </div>
+        </div>
+    </div>
 
+    <!-- Page 10: Storage & Inventories -->
+    <div class="page" id="page10">
+        <div class="content-wrapper">
+            <h1>Storage &amp; Inventories</h1>
+            <div class="key-points">
+                <h3>Underground Storage</h3>
+                <ul style="list-style: none;">
+                    <li>Working gas in storage reached 3,272&nbsp;Bcf in early September, 173&nbsp;Bcf above the five‑year average but 73&nbsp;Bcf below last year【922490133870369†L186-L200】.</li>
+                    <li>The EIA’s September Short‑Term Energy Outlook forecasts end‑October inventories at 3,912&nbsp;Bcf and end‑March levels near 1,852&nbsp;Bcf【922490133870369†L186-L193】.</li>
+                    <li>Should storage fill early, producers may need to curtail output to avoid breaching maximum capacity【922490133870369†L199-L203】.</li>
+                </ul>
+            </div>
+            <div class="highlight-box">
+                <h3>Storage Dynamics</h3>
+                <p>High storage levels provide a cushion against winter volatility but limit upside price potential. Producers will monitor injection rates closely as power burns decline in autumn.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page 11: Regional Electricity & Capacity Markets -->
+    <div class="page" id="page11">
+        <div class="content-wrapper">
+            <h1>Regional Electricity &amp; Capacity Markets</h1>
+            <div class="key-points">
+                <h3>PJM & MISO Auctions</h3>
+                <ul style="list-style: none;">
+                    <li>PJM’s 2025/26 capacity auction cleared at the price cap, reflecting a 5,446&nbsp;MW increase in requirements, higher reserve margins and lower supply offered【922490133870369†L385-L433】.</li>
+                    <li>Demand response and energy efficiency were limited, contributing to tight conditions【922490133870369†L394-L406】.</li>
+                    <li>MISO discovered a software error in its loss‑of‑load expectation calculation dating to 2018/19; the 2025/26 planning resource auction will be recalculated, with adjustments appearing in settlement statements【922490133870369†L437-L465】.</li>
+                    <li>Rapid electrification (data centers and EVs) is straining capacity in multiple regions, while supply chain issues and interconnection delays hinder new generation.</li>
+                </ul>
+            </div>
+            <div class="highlight-box">
+                <h3>Forward Power Prices</h3>
+                <p>Forward power prices for 2026–2029 have risen across U.S. hubs. Regions with constrained capacity—NYISO Zone&nbsp;J, PJM West and New England—show the steepest premiums. Market participants should consider hedging farther out to manage cost risk.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page 12: Renewable Energy & Offshore Wind -->
+    <div class="page" id="page12">
+        <div class="content-wrapper">
+            <h1>Renewables &amp; Offshore Wind</h1>
+            <div class="key-points">
+                <h3>Regulatory Headwinds</h3>
+                <ul style="list-style: none;">
+                    <li>Since April 2025 the Bureau of Ocean Energy Management (BOEM) and Interior Department have issued multiple stop‑work orders and permit revocations for offshore wind projects, including Empire Wind, Revolution Wind and several New England projects【922490133870369†L318-L343】.</li>
+                    <li>The administration rescinded designated wind energy areas and pulled $679&nbsp;M in grant funding for 12 projects【922490133870369†L318-L333】.</li>
+                    <li>A New Bedford Light investigation reports that the Revolution Wind project, 80% complete, was ordered to halt due to national security concerns; 45 of 65 turbines were installed【110228095091251†L210-L249】.</li>
+                    <li>Developers warn that repeated pauses and permit uncertainty raise costs and threaten the viability of U.S. offshore wind; opponents cite national security and environmental risks【110228095091251†L290-L307】.</li>
+                </ul>
+            </div>
+            <div class="highlight-box">
+                <h3>Impact on Gas Markets</h3>
+                <p>Delays and cancellations of offshore wind projects increase reliance on natural gas‑fired generation in coastal regions. This dynamic could support gas demand and pipeline expansion even as renewables scale up in other sectors.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page 13: Policy & Regulatory Environment -->
+    <div class="page" id="page13">
+        <div class="content-wrapper">
+            <h1>Policy &amp; Regulatory Environment</h1>
+            <div class="key-points">
+                <h3>Key Policy Developments</h3>
+                <ul style="list-style: none;">
+                    <li>Trade deals include tariff reductions on carbon capture technologies and reforms to nuclear licensing, enabling broader low‑carbon investment【922490133870369†L65-L72】.</li>
+                    <li>Federal agencies are reassessing offshore wind leases and construction plans, citing national security and environmental concerns【110228095091251†L241-L256】.</li>
+                    <li>The administration is considering pipeline expansion and cross‑border electricity trade with Mexico as part of energy security strategy【922490133870369†L75-L76】.</li>
+                    <li>States and regions continue to roll out clean energy standards, but implementation timelines may slow if grid reliability is threatened.</li>
+                </ul>
+            </div>
+            <div class="highlight-box">
+                <h3>Strategic Considerations</h3>
+                <p>Regulatory uncertainty underscores the need for diversified portfolios. Companies should monitor policy signals closely and engage with stakeholders to advocate for predictable permitting and market access.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page 14: Price Forecasts & Forward Curves -->
+    <div class="page" id="page14">
+        <div class="content-wrapper">
+            <h1>Price Forecasts &amp; Forward Curves</h1>
+            <div class="chart-container">
+                <canvas id="nymexChart"></canvas>
+            </div>
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-value">$3.92</div>
+                    <div class="stat-label">Cal 2026</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">$3.93</div>
+                    <div class="stat-label">Cal 2027</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">$3.81</div>
+                    <div class="stat-label">Cal 2028</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">$3.69</div>
+                    <div class="stat-label">Cal 2029</div>
+                </div>
+            </div>
+            <div class="highlight-box">
+                <h3>Market Interpretation</h3>
+                <p>NYMEX natural gas forward strips reflect modest backwardation through the late 2020s, with Cal&nbsp;2026‑27 near $3.90/MMBtu and further years gradually declining toward $3.60. Futures prices remain above $3 despite economic headwinds and robust storage【922490133870369†L497-L518】.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page 15: Demand Sectors -->
+    <div class="page" id="page15">
+        <div class="content-wrapper">
+            <h1>Demand by Sector</h1>
+            <div class="key-points">
+                <h3>Sectoral Breakdown</h3>
+                <ul style="list-style: none;">
+                    <li><strong>Residential &amp; Commercial:</strong> Winter heating demand drives seasonal peaks; EIA projects these sectors will underpin consumption growth in 2025【429892515268527†L354-L379】.</li>
+                    <li><strong>Industrial:</strong> Petrochemical, fertilizer and manufacturing sectors continue to expand capacity, benefiting from relatively low U.S. gas prices.</li>
+                    <li><strong>Power Generation:</strong> Gas remains the largest source of U.S. electricity, but its share is slipping as solar and wind build‑out accelerates【237861724867901†L392-L449】.</li>
+                    <li><strong>Transportation:</strong> LNG is gaining traction in heavy‑duty trucking and marine sectors, though volumes remain small relative to other sectors.</li>
+                </ul>
+            </div>
+            <div class="highlight-box">
+                <h3>Emerging Demand Drivers</h3>
+                <p>Data centers and AI compute clusters are boosting electricity demand, indirectly supporting natural gas consumption where renewables cannot keep pace. Global shipping regulations may also spur LNG bunkering demand.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page 16: Technology & Innovation -->
+    <div class="page" id="page16">
+        <div class="content-wrapper">
+            <h1>Technology &amp; Innovation</h1>
+            <div class="key-points">
+                <h3>Low‑Carbon Technologies</h3>
+                <ul style="list-style: none;">
+                    <li>Trade agreements include provisions for cooperation on carbon capture, utilization and storage (CCUS) and advanced battery technologies【922490133870369†L65-L70】.</li>
+                    <li>Producers are adopting next‑generation hydraulic fracturing and horizontal drilling methods to improve well productivity and reduce costs【922490133870369†L129-L131】.</li>
+                    <li>Gas turbine upgrades and hybrid peaker plants enhance efficiency and flexibility in power markets.</li>
+                    <li>Long‑duration energy storage and green hydrogen projects are in early stages but could alter long‑term gas demand trajectories.</li>
+                </ul>
+            </div>
+            <div class="highlight-box">
+                <h3>Innovation Outlook</h3>
+                <p>Investment in technology will be critical to maintain U.S. energy competitiveness. CCUS and hydrogen could expand gas demand even in a decarbonizing world, while efficiency gains temper upstream growth.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page 17: Environmental & Sustainability Considerations -->
+    <div class="page" id="page17">
+        <div class="content-wrapper">
+            <h1>Environmental &amp; Sustainability</h1>
+            <div class="key-points">
+                <h3>Climate Impacts</h3>
+                <ul style="list-style: none;">
+                    <li>Natural gas emits less CO<sub>2</sub> than coal and oil, but methane leakage remains a concern; regulators are tightening emissions standards and monitoring requirements.</li>
+                    <li>Renewable capacity additions continue to accelerate despite policy setbacks; solar and wind together are expected to supply the largest share of incremental U.S. generation in 2025–26【237861724867901†L392-L399】.</li>
+                    <li>High gas prices in global markets encourage switching to coal in some regions, highlighting the need for price stability and environmental policies.</li>
+                    <li>Energy efficiency and electrification initiatives aim to reduce end‑use consumption, tempering long‑term growth in gas demand.</li>
+                </ul>
+            </div>
+            <div class="highlight-box">
+                <h3>Sustainability Strategy</h3>
+                <p>Balancing energy security with decarbonization goals requires investment in leak detection, methane mitigation, and low‑carbon fuel alternatives. Stakeholders should consider the full life‑cycle emissions of energy portfolios.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page 18: Infrastructure & Transmission -->
+    <div class="page" id="page18">
+        <div class="content-wrapper">
+            <h1>Infrastructure &amp; Transmission</h1>
+            <div class="key-points">
+                <h3>Pipelines and Grid</h3>
+                <ul style="list-style: none;">
+                    <li>The U.S. pipeline network continues to expand to connect shale basins to LNG terminals and demand centers.</li>
+                    <li>Cross‑border integration with Mexico includes tariff‑free electricity trade and pipeline upgrades【922490133870369†L75-L76】.</li>
+                    <li>Grid operators face challenges interconnecting new renewable projects, leading to lengthy queues and capacity shortages【922490133870369†L385-L433】.</li>
+                    <li>Transmission upgrades and storage integration are essential to support electrification and maintain reliability.</li>
+                </ul>
+            </div>
+            <div class="highlight-box">
+                <h3>Future Developments</h3>
+                <p>Investment in smart grids, flexible transmission and resilient pipelines will shape the energy landscape. Collaboration between regulators, utilities and developers is necessary to streamline permitting and accelerate construction.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page 19: Market Outlook & Strategic Implications -->
+    <div class="page" id="page19">
+        <div class="content-wrapper">
+            <h1>Market Outlook &amp; Strategic Implications</h1>
+            <div class="highlight-box" style="background: linear-gradient(135deg, rgba(0,255,127,0.25) 0%, rgba(127,255,212,0.2) 50%, rgba(50,205,50,0.25) 100%);">
+                <h2 style="border: none; text-align: center;">Market Temperature Assessment</h2>
+                <div class="stat-grid">
+                    <div class="stat-card">
+                        <div class="energy-icon" style="width: 50px; height: 50px;"></div>
+                        <div class="stat-label">Weather: Neutral</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="energy-icon" style="width: 50px; height: 50px;"></div>
+                        <div class="stat-label">Production: Bullish</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="energy-icon" style="width: 50px; height: 50px;"></div>
+                        <div class="stat-label">Storage: Neutral</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="energy-icon" style="width: 50px; height: 50px;"></div>
+                        <div class="stat-label">LNG: Bullish</div>
+                    </div>
+                </div>
+            </div>
+            <div class="key-points">
+                <h2>Strategic Implications</h2>
+                <ul style="list-style: none;">
+                    <li><strong>Supply Dynamics:</strong> Record production provides stability but may require curtailments if storage fills early【922490133870369†L186-L204】.</li>
+                    <li><strong>Demand Growth:</strong> Data centers, electrification and LNG exports drive unprecedented demand, especially in Asia.</li>
+                    <li><strong>Infrastructure Challenges:</strong> Offshore wind setbacks and interconnection delays create opportunities for gas infrastructure【922490133870369†L318-L343】.</li>
+                    <li><strong>Price Outlook:</strong> Forward curves remain bullish near‑term; hedging strategies should extend beyond 2027【922490133870369†L497-L518】.</li>
+                    <li><strong>Global Competition:</strong> Russia–China pipeline deals alter gas flows, but U.S. dominance endures in LNG export markets【11909390558688†L195-L267】.</li>
+                    <li><strong>Market Resilience:</strong> Diversified trade partnerships and innovation strengthen U.S. energy leadership.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page 20: Conclusion & Recommendations -->
+    <div class="page" id="page20">
+        <div class="content-wrapper">
+            <h1>Conclusion &amp; Recommendations</h1>
+            <div class="highlight-box">
+                <h3>Summary</h3>
+                <p>This report highlights the dynamic nature of the 2025 energy landscape. Record natural gas production and robust export commitments have positioned the United States at the forefront of global energy supply. Yet uncertainties around weather, policy and global competition underscore the importance of agile strategies. Markets remain tight but well supplied, with production gains offset by full storage and regulatory headwinds.</p>
+            </div>
+            <div class="key-points">
+                <h3>Actionable Recommendations</h3>
+                <ul style="list-style: none;">
+                    <li>Monitor weather signals closely, especially ENSO‑neutral indicators like the NAO/AO, to fine‑tune procurement.</li>
+                    <li>Engage in long‑term hedging across 2026–2029 to capture backwardation and mitigate volatility.</li>
+                    <li>Diversify supply portfolios with both U.S. and international LNG sources to manage geopolitical risk.</li>
+                    <li>Advocate for streamlined permitting to accelerate infrastructure projects and renewable integration.</li>
+                    <li>Invest in low‑carbon technologies (CCUS, hydrogen, battery storage) to future‑proof operations against policy shifts.</li>
+                    <li>Strengthen engagement with regulators and communities to navigate evolving policy landscapes and ensure project acceptance.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Three.js animated background
+        let scene, camera, renderer, particles;
+        function initBackground() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x000000, 1);
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+            // create particles
+            const particleCount = 1500;
+            const positions = new Float32Array(particleCount * 3);
+            const colors = new Float32Array(particleCount * 3);
+            const sizes = new Float32Array(particleCount);
+            for (let i = 0; i < particleCount; i++) {
+                positions[i * 3] = (Math.random() - 0.5) * 100;
+                positions[i * 3 + 1] = (Math.random() - 0.5) * 100;
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 100;
+                const colorChoice = Math.random();
+                if (colorChoice < 0.4) {
+                    colors[i * 3] = 0;
+                    colors[i * 3 + 1] = 1;
+                    colors[i * 3 + 2] = 0.5;
+                } else if (colorChoice < 0.7) {
+                    colors[i * 3] = 0.5;
+                    colors[i * 3 + 1] = 1;
+                    colors[i * 3 + 2] = 0.8;
+                } else {
+                    colors[i * 3] = 0.2;
+                    colors[i * 3 + 1] = 0.8;
+                    colors[i * 3 + 2] = 0.2;
+                }
+                sizes[i] = Math.random() * 3 + 1;
+            }
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+            const material = new THREE.ShaderMaterial({
+                vertexShader: `
+                    attribute float size;
+                    attribute vec3 color;
+                    varying vec3 vColor;
+                    void main() {
+                        vColor = color;
+                        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+                        gl_PointSize = size * (300.0 / -mvPosition.z);
+                        gl_Position = projectionMatrix * mvPosition;
+                    }
+                `,
+                fragmentShader: `
+                    varying vec3 vColor;
+                    void main() {
+                        float r = distance(gl_PointCoord, vec2(0.5, 0.5));
+                        if (r > 0.5) discard;
+                        float alpha = 1.0 - (r * 2.0);
+                        gl_FragColor = vec4(vColor, alpha * 0.8);
+                    }
+                `,
+                transparent: true,
+                blending: THREE.AdditiveBlending
+            });
+            particles = new THREE.Points(geometry, material);
+            scene.add(particles);
+            camera.position.z = 30;
+            const ambientLight = new THREE.AmbientLight(0x004d1a, 0.3);
+            scene.add(ambientLight);
+        }
+        function animateBackground() {
+            requestAnimationFrame(animateBackground);
+            const time = Date.now() * 0.001;
+            const positions = particles.geometry.attributes.position.array;
+            for (let i = 0; i < positions.length; i += 3) {
+                positions[i] += Math.sin(time + i) * 0.01;
+                positions[i + 1] += Math.cos(time + i) * 0.01;
+                positions[i + 2] += Math.sin(time + i * 0.5) * 0.005;
+            }
+            particles.geometry.attributes.position.needsUpdate = true;
+            particles.rotation.y += 0.001;
+            particles.rotation.x += 0.0005;
+            renderer.render(scene, camera);
+        }
+        // Initialize charts
+        function initCharts() {
+            // Gas production chart
+            const gasCtx = document.getElementById('gasProductionChart');
+            if (gasCtx) {
+                new Chart(gasCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+                        datasets: [
+                            {
+                                label: '2025 Production (Bcf/d)',
+                                data: [103.2, 104.1, 105.8, 106.2, 105.9, 106.8, 107.1, 107.4],
+                                borderColor: '#00ff7f',
+                                backgroundColor: 'rgba(0, 255, 127, 0.1)',
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.4,
+                                pointBackgroundColor: '#00ff7f',
+                                pointBorderColor: '#fff',
+                                pointBorderWidth: 2,
+                                pointRadius: 6
+                            },
+                            {
+                                label: '2024 Production (Bcf/d)',
+                                data: [99.8, 100.2, 101.1, 100.9, 101.3, 101.8, 102.1, 101.9],
+                                borderColor: '#7fffd4',
+                                backgroundColor: 'rgba(127, 255, 212, 0.1)',
+                                borderWidth: 2,
+                                fill: false,
+                                tension: 0.4,
+                                pointBackgroundColor: '#7fffd4',
+                                pointBorderColor: '#fff',
+                                pointBorderWidth: 2,
+                                pointRadius: 4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { labels: { color: '#e0ffe0' } }
+                        },
+                        scales: {
+                            x: { ticks: { color: '#98fb98' }, grid: { color: 'rgba(152, 251, 152, 0.2)' } },
+                            y: { ticks: { color: '#98fb98' }, grid: { color: 'rgba(152, 251, 152, 0.2)' } }
+                        }
+                    }
+                });
+            }
+            // Consumption chart
+            const consCtx = document.getElementById('consumptionChart');
+            if (consCtx) {
+                new Chart(consCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['2024', '2025 (F)', '2026 (F)'],
+                        datasets: [
+                            {
+                                label: 'U.S. Gas Consumption (Bcf/d)',
+                                data: [90.5, 91.4, 90.9],
+                                backgroundColor: ['rgba(0, 255, 127, 0.8)', 'rgba(127, 255, 212, 0.8)', 'rgba(50, 205, 50, 0.8)'],
+                                borderColor: ['#00ff7f', '#7fffd4', '#32cd32'],
+                                borderWidth: 2
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { labels: { color: '#e0ffe0' } }
+                        },
+                        scales: {
+                            x: { ticks: { color: '#98fb98' }, grid: { color: 'rgba(152, 251, 152, 0.2)' } },
+                            y: { ticks: { color: '#98fb98' }, grid: { color: 'rgba(152, 251, 152, 0.2)' } }
+                        }
+                    }
+                });
+            }
+            // Global demand chart
+            const globalCtx = document.getElementById('globalDemandChart');
+            if (globalCtx) {
+                new Chart(globalCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['2023', '2024', '2025 (F)', '2026 (F)'],
+                        datasets: [
+                            {
+                                label: 'Global Gas Demand Growth (%)',
+                                data: [1.5, 2.8, 1.3, 2.0],
+                                borderColor: '#32cd32',
+                                backgroundColor: 'rgba(50, 205, 50, 0.1)',
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.4,
+                                pointBackgroundColor: '#32cd32',
+                                pointBorderColor: '#fff',
+                                pointBorderWidth: 2,
+                                pointRadius: 5
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { labels: { color: '#e0ffe0' } }
+                        },
+                        scales: {
+                            x: { ticks: { color: '#98fb98' }, grid: { color: 'rgba(152, 251, 152, 0.2)' } },
+                            y: { ticks: { color: '#98fb98' }, grid: { color: 'rgba(152, 251, 152, 0.2)' } }
+                        }
+                    }
+                });
+            }
+            // NYMEX forward curve chart
+            const nymexCtx = document.getElementById('nymexChart');
+            if (nymexCtx) {
+                new Chart(nymexCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Cal 2026', 'Cal 2027', 'Cal 2028', 'Cal 2029', 'Cal 2030'],
+                        datasets: [
+                            {
+                                label: 'NYMEX Forward Prices ($/MMBtu)',
+                                data: [3.92, 3.93, 3.81, 3.69, 3.58],
+                                backgroundColor: [
+                                    'rgba(0, 255, 127, 0.8)',
+                                    'rgba(127, 255, 212, 0.8)',
+                                    'rgba(50, 205, 50, 0.8)',
+                                    'rgba(0, 255, 127, 0.6)',
+                                    'rgba(127, 255, 212, 0.6)'
+                                ],
+                                borderColor: ['#00ff7f', '#7fffd4', '#32cd32', '#00ff7f', '#7fffd4'],
+                                borderWidth: 2
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { labels: { color: '#e0ffe0' } }
+                        },
+                        scales: {
+                            x: { ticks: { color: '#98fb98' }, grid: { color: 'rgba(152, 251, 152, 0.2)' } },
+                            y: { ticks: { color: '#98fb98' }, grid: { color: 'rgba(152, 251, 152, 0.2)' } }
+                        }
+                    }
+                });
+            }
+        }
+        // Navigation functionality
+        function scrollToPage(index) {
+            const pages = document.querySelectorAll('.page');
+            const dots = document.querySelectorAll('.nav-dot');
+            if (pages[index]) {
+                pages[index].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                dots.forEach(dot => dot.classList.remove('active'));
+                dots[index].classList.add('active');
+            }
+        }
+        let ticking = false;
+        function updateActiveNavDot() {
+            if (!ticking) {
+                requestAnimationFrame(() => {
+                    const pages = document.querySelectorAll('.page');
+                    const dots = document.querySelectorAll('.nav-dot');
+                    const scrollPos = window.scrollY + window.innerHeight / 2;
+                    pages.forEach((page, index) => {
+                        const pageTop = page.offsetTop;
+                        const pageBottom = pageTop + page.offsetHeight;
+                        if (scrollPos >= pageTop && scrollPos <= pageBottom) {
+                            dots.forEach(dot => dot.classList.remove('active'));
+                            if (dots[index]) dots[index].classList.add('active');
+                        }
+                    });
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        }
+        function handleParallax() {
+            const scrolled = window.pageYOffset;
+            const rate = scrolled * -0.5;
+            if (particles) {
+                particles.rotation.y = scrolled * 0.0002;
+                particles.position.y = rate * 0.01;
+            }
+        }
+        function handleResize() {
+            if (camera && renderer) {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            initBackground();
+            animateBackground();
+            initCharts();
+            window.addEventListener('scroll', () => {
+                const scrollIndicator = document.querySelector('.scroll-indicator');
+                if (window.scrollY > 100 && scrollIndicator) {
+                    scrollIndicator.style.opacity = '0';
+                }
+                updateActiveNavDot();
+                handleParallax();
+            });
+            window.addEventListener('resize', handleResize);
+            document.documentElement.style.scrollBehavior = 'smooth';
+        });
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            const currentActive = document.querySelector('.nav-dot.active');
+            const dots = Array.from(document.querySelectorAll('.nav-dot'));
+            const currentIndex = dots.indexOf(currentActive);
+            if (e.key === 'ArrowDown' || e.key === 'PageDown') {
+                e.preventDefault();
+                if (currentIndex < dots.length - 1) scrollToPage(currentIndex + 1);
+            } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+                e.preventDefault();
+                if (currentIndex > 0) scrollToPage(currentIndex - 1);
+            }
+        });
+        // Touch navigation
+        let startY = 0;
+        let endY = 0;
+        document.addEventListener('touchstart', (e) => {
+            startY = e.touches[0].clientY;
+        });
+        document.addEventListener('touchend', (e) => {
+            endY = e.changedTouches[0].clientY;
+            const diff = startY - endY;
+            const dots = Array.from(document.querySelectorAll('.nav-dot'));
+            const currentActive = document.querySelector('.nav-dot.active');
+            const currentIndex = dots.indexOf(currentActive);
+            if (Math.abs(diff) > 50) {
+                if (diff > 0 && currentIndex < dots.length - 1) {
+                    scrollToPage(currentIndex + 1);
+                } else if (diff < 0 && currentIndex > 0) {
+                    scrollToPage(currentIndex - 1);
+                }
+            }
+        });
+    </script>
 </body>
 </html>
